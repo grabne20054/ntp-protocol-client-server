@@ -1,5 +1,6 @@
 import socket
 import time
+import NTP
 
 
 def ntp_server(host="0.0.0.0", port=12345):
@@ -9,10 +10,17 @@ def ntp_server(host="0.0.0.0", port=12345):
 
     while True:
         message, client_address = server_socket.recvfrom(1024)
-        t2 = time.time()  # Time when the request is processed
+       
+        print("Received request from", client_address)
+        t2 = time.time()
         # Send back both t2 and t3 as part of the response
+        packet = NTP.NTPPacket.from_binary(message)
+        packet.set_t2(t2)
+
+        
         t3 = time.time()  # Time when the response is sent
-        server_socket.sendto(f"{t2},{t3}".encode(), client_address)
+        packet.set_t3(t3)
+        server_socket.sendto(packet.to_binary(), client_address)
 
 
 if __name__ == "__main__":
